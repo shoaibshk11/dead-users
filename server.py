@@ -24,6 +24,12 @@ progress = {
 
 lock = threading.Lock()
 
+from flask import send_from_directory
+
+@app.route("/")
+def home():
+    return send_from_directory(".", "index.html")
+
 
 def check_single(user):
     global progress
