@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Instagram Checker</title>
+</head>
+<body>
+
+<h2>Instagram Username Checker</h2>
+
+<textarea id="input" rows="10" cols="50"></textarea><br><br>
+<button onclick="startCheck()">Check</button>
+
+<br><br>
+<div style="width: 100%; background: #ddd;">
+    <div id="bar" style="width:0%; height:20px; background:green;"></div>
+</div>
+<p id="percent">0%</p>
+
+<h3>Working</h3>
+<pre id="working"></pre>
+
+<h3>Dead</h3>
+<pre id="dead"></pre>
+
+<script>
+async function startCheck() {
+    let usernames = document.getElementById("input").value.split(/\s+/);
+
+    fetch("/check", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ usernames })
+    }).then(res => res.json()).then(data => {
+        document.getElementById("working").innerText =
+            data.working.map(u => "https://www.instagram.com/" + u).join("\n");
+
+        document.getElementById("dead").innerText =
+            data.dead.join("\n");
+    });
+
+    updateProgress();
+}
+
+async function updateProgress() {
+    let interval = setInterval(async () => {
+        let res = await fetch("/progress");
+        let data = await res.json();
+
+        let percent = 0;
+        if (data.total > 0) {
+            percent = Math.floor((data.done / data.total) * 100);
+        }
+
+        document.getElementById("bar").style.width = percent + "%";
+        document.getElementById("percent").innerText = percent + "%";
+
+        if (percent >= 100) clearInterval(interval);
+    }, 500);
+}
+</script>
+
+</body>
+</html>
